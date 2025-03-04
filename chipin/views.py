@@ -46,7 +46,6 @@ def invite_users(request, group_id):
     users_not_in_group = User.objects.exclude(id__in=group.members.values_list('id', flat=True))
     if request.method == 'POST':
         email = request.POST.get('email')
-        send_invitation_email(group, email, request)
         messages.success(request, f'Invitation sent to {email}')
         return redirect('chipin:group_detail', group_id=group.id)
     return render(request, 'chipin/invite_users.html', {'group': group, 'users_not_in_group': users_not_in_group})
