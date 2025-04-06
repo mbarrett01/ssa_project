@@ -1,10 +1,13 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm
+from .forms import TopUpForm
+from .models import Profile, Transaction
+from django.contrib.auth.models import User
 
 @login_required(login_url='users:login')
 def user(request):
@@ -41,3 +44,41 @@ def register(request):
     else:
         form = UserRegistrationForm()
     return render(request, 'users/register.html', {'form': form})
+
+def user(request):
+    profile = request.user.profile
+    return render(request, 'users/user.html', {
+        'user': request.user,
+        'balance': profile.balance
+    })
+
+@login_required
+def TopUpBalance(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.user != user:
+        return HttpResponseForbidden("You are not allowed to access this page.")
+    if request.method == "POST":
+            form = TopUpForm(request.POST)
+            if form.is_valid():
+                amount = form.cleaned_data['amount']
+
+                profile = request.user.profile
+                profile.balance += amount
+                profile.save()
+
+                Transaction.objects.create(user=request.user, amount=amount)
+
+                # Send success message
+                messages.success(request, f"Your balance has been topped up by ${amount}.")
+                
+                return redirect('users:user')  # Redirect to user dashboard
+    else:
+            form = TopUpForm()
+
+            context = {
+                'form': form,
+                'user_balance': request.user.profile.balance,
+                'welcome_message': f"Welcome back, {request.user.first_name}!",
+            }
+
+    return render(request, 'chipin/top_up.html', {'form': form})

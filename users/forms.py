@@ -26,3 +26,15 @@ class UserRegistrationForm(UserCreationForm):
             profile.nickname = self.cleaned_data['nickname']
             profile.save()
         return user
+    
+
+class TopUpForm(forms.ModelForm):
+        amount = forms.DecimalField(min_value=0.01, decimal_places=2, max_digits=5, label="Amount to Top-Up")
+        error_messages={
+            'min_value': "Please enter an amount greater than $0.00.",
+            'invalid': "Enter a valid amount in dollars and cents.",
+        }
+        
+        class Meta:
+            model = Profile  # Replace with the correct model if it's not Profile
+            fields = []  # No model fields directly editable via this form

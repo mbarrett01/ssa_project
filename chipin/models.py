@@ -51,3 +51,5 @@ class Event(models.Model):
                 return False
         self.status = 'Active'
         return True
+    
+
