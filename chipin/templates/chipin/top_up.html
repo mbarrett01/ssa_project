@@ -1,8 +1,8 @@
 {% extends 'chipin/base.html' %}
-
+{% load static %}
 {% block content %}
     <h2>{{ welcome_message }}</h2>
-    <p>Your current balance is: ${{ user_balance }}</p>
+    <p>Current Balance: ${{ balance }}</p>
 
     <form method="post">
         {% csrf_token %}
